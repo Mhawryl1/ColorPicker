@@ -1,0 +1,9 @@
+
+#define IDI_PICKER 101
+#define IDI_CLOSE 102
+#define IDI_CANCEL 103
+#define IDR_POPUPMENU 104
+#define IDM_TEST 105
+#define IDM_CLOSE 106
+#define IDI_CLOSEBMP 107
+#define IDI_PASTE 108
