@@ -2,6 +2,7 @@
 #include "window.h"
 
 std::unordered_map<std::wstring, HWND> Window::m_uMap;
+COLORREF Window::m_sCref;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     static HWND hWNDTx;
@@ -73,9 +74,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         } break;
 
         case WM_COPY: {
-            auto pWin = reinterpret_cast<Window*>(lParam);
-            if (!pWin->CopyToClipboard()) {
-                std::cout << "Copy to clipboard\n";
+            if (!CopyToClipboard(Window::GetWindowHandel(L"Color Picker"))) {
+                std::cout << "Copied to clipboard\n";
             }
         } break;
 
@@ -129,6 +129,7 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     static HWND hButton = NULL;
     static HBRUSH hBrush = NULL;
     static POINT lastLocation;
+
     switch (uMsg) {
         case WM_CLOSE:
             DestroyWindow(hwnd);
@@ -137,15 +138,15 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             PostQuitMessage(0);
             break;
         case WM_CREATE: {
-            hWndTxHEX = CreateWindow(L"STATIC", L"HEXCOLOR", WS_VISIBLE | WS_CHILD, 30, 80, 250, 20, hwnd, NULL, NULL, NULL);
+            hWndTxHEX = CreateWindow(L"STATIC", L"HEXCOLOR", WS_VISIBLE | WS_CHILD, 30, 120, 250, 20, hwnd, NULL, NULL, NULL);
             if (!Window::isInWndHandelMap(L"HEXCOLOR"))
                 Window::m_uMap.insert({L"HEXCOLOR", hWndTxHEX});
 
-            hWndTxRGB = CreateWindow(L"STATIC", L"RGBCOLOR", WS_VISIBLE | WS_CHILD, 30, 140, 250, 20, hwnd, NULL, NULL, NULL);
+            hWndTxRGB = CreateWindow(L"STATIC", L"RGBCOLOR", WS_VISIBLE | WS_CHILD, 30, 180, 250, 20, hwnd, NULL, NULL, NULL);
             if (!Window::isInWndHandelMap(L"RGBCOLOR"))
                 Window::m_uMap.insert({L"RGBCOLOR", hWndTxRGB});
 
-            hWndTxHSV = CreateWindow(L"STATIC", L"HSVCOLOR", WS_VISIBLE | WS_CHILD, 30, 200, 250, 20, hwnd, NULL, NULL, NULL);
+            hWndTxHSV = CreateWindow(L"STATIC", L"HSVCOLOR", WS_VISIBLE | WS_CHILD, 30, 240, 250, 20, hwnd, NULL, NULL, NULL);
             if (!Window::isInWndHandelMap(L"HSVCOLOR"))
                 Window::m_uMap.insert({L"HSVCOLOR", hWndTxHSV});
 
@@ -166,14 +167,13 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             lastLocation.y = lastLocation.y - rc.top;
         } break;
         case WM_MOUSEMOVE: {
+            //////////////MOVING WINDOW/////////////////
             if (GetKeyState(VK_LBUTTON) & 0x1 << 15) {
                 POINT currentPos;
-                RECT rc;
                 GetCursorPos(&currentPos);
                 int32_t x = currentPos.x - lastLocation.x;
                 int32_t y = currentPos.y - lastLocation.y;
-
-                MoveWindow(hwnd, x, y, 400, 250, TRUE);
+                MoveWindow(hwnd, x, y, 400, 290, FALSE);
             }
 
         } break;
@@ -204,8 +204,8 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             BeginPaint(hwnd, &ps);
             HBRUSH bBrush = CreateSolidBrush(RGB(45, 45, 45));
             SelectObject(ps.hdc, bBrush);
-            RoundRect(ps.hdc, 5, 5, 395, 245, 5, 5);
-            RECT lRect = {30, 120, 370, 122};
+            RoundRect(ps.hdc, 5, 5, 395, 285, 5, 5);
+            RECT lRect = {30, 160, 370, 162};
             DrawEdge(ps.hdc, &lRect, EDGE_BUMP, BF_BOTTOM);
             lRect.top += 60;
             lRect.bottom += 62;
@@ -268,22 +268,12 @@ LRESULT CALLBACK BarMenuProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg) {
         case WM_MOUSEMOVE:
             if (TrackingMouse && hwnd == Window::GetWindowHandel(L"MiniButtons")) {
-                TRACKMOUSEEVENT me{};
-                me.cbSize = sizeof(TRACKMOUSEEVENT);
-                me.dwHoverTime = 1;
-                me.hwndTrack = hwnd;
-                me.dwFlags = TME_HOVER | TME_LEAVE;
+                TrackWndMouseEvent(hwnd);
                 TrackingMouse = FALSE;
-                TrackMouseEvent(&me);
             }
             if (TrackingMouse && hwnd == Window::GetWindowHandel(L"CloseButton")) {
-                TRACKMOUSEEVENT me{};
-                me.cbSize = sizeof(TRACKMOUSEEVENT);
-                me.dwHoverTime = 1;
-                me.hwndTrack = hwnd;
-                me.dwFlags = TME_HOVER | TME_LEAVE;
+                TrackWndMouseEvent(hwnd);
                 TrackingMouse = FALSE;
-                TrackMouseEvent(&me);
             }
             break;
         case WM_MOUSEHOVER: {
@@ -336,27 +326,73 @@ LRESULT CALLBACK BarMenuProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 }
 LRESULT CALLBACK CopyPasteProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     static HBRUSH hBrush = NULL;
+    static HWND arr[3] = {NULL};
+    static HICON hIcon = NULL;
+    static HICON hIconWht = NULL;
+    static bool bTackMouse = TRUE;
     switch (uMsg) {
-        case WM_LBUTTONDOWN: {
-            HDC hdc = GetDC(hwnd);
+        case WM_CREATE: {
             RECT rct;
             GetClientRect(hwnd, &rct);
-            // Load icon from resource file
-            HICON hIcon = (HICON)LoadIcon(GetModuleHandle(0), MAKEINTRESOURCE(IDI_PASTE));
-            if (!hIcon) {
+            hIcon = (HICON)LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDI_PASTEWHITE), IMAGE_ICON, 25, 25, LR_COPYFROMRESOURCE);
+            hIconWht = (HICON)LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDI_PASTE), IMAGE_ICON, 25, 25, LR_COPYFROMRESOURCE);
+
+            if (!hIcon || !hIconWht) {
                 std::cerr << "Couldn't load image\n";
-                return -1;
+                return false;
             }
-            hBrush = CreateSolidBrush(RGB(100, 0, 0));
-            FillRect(hdc, &rct, hBrush);
-            DrawIconEx(
-                hdc,
-                rct.left,
-                rct.top,
-                hIcon,
-                30,
-                30,
-                0, NULL, DI_NORMAL);
+
+            for (size_t i = 0; i < 3; i++) {
+                if (!arr[i]) {
+                    arr[i] = CreateWindowW(L"STATIC", NULL, WS_VISIBLE | WS_CHILD | SS_ICON | SS_REALSIZEIMAGE | SS_CENTERIMAGE,
+                                           rct.left + 5, rct.top + 5, 25, 25,
+                                           hwnd, NULL, NULL, NULL);
+                    SendMessage(arr[i], STM_SETICON, (WPARAM)hIcon, NULL);
+                    break;
+                }
+            }
+
+        } break;
+        case WM_CTLCOLORSTATIC: {
+            HDC hdcStatic = (HDC)wParam;
+            hBrush = CreateSolidBrush(RGB(55, 55, 55));
+            return LRESULT(hBrush);
+        }
+        case WM_LBUTTONDOWN: {
+            if (hwnd == Window::GetWindowHandel(L"CopyPasteHEX"))
+                CopyToClipboard(Window::GetWindowHandel(L"Color Picker"));
+            if (hwnd == Window::GetWindowHandel(L"CopyPasteRGB")) {
+                CopyToClipboard(ColorToRGB(Window::m_sCref));
+            }
+            if (hwnd == Window::GetWindowHandel(L"CopyPasteHSV")) {
+                CopyToClipboard(ColorToHSV(Window::m_sCref));
+            }
+        } break;
+        case WM_MOUSEMOVE: {
+            if (bTackMouse && hwnd == Window::GetWindowHandel(L"CopyPasteHEX")) {
+                SendMessage(arr[0], STM_SETICON, (WPARAM)hIconWht, NULL);
+                TrackWndMouseEvent(hwnd);
+                bTackMouse = false;
+            }
+            if (bTackMouse && hwnd == Window::GetWindowHandel(L"CopyPasteRGB")) {
+                SendMessage(arr[1], STM_SETICON, (WPARAM)hIconWht, NULL);
+                TrackWndMouseEvent(hwnd);
+                bTackMouse = false;
+            }
+            if (bTackMouse && hwnd == Window::GetWindowHandel(L"CopyPasteHSV")) {
+                SendMessage(arr[2], STM_SETICON, (WPARAM)hIconWht, NULL);
+                TrackWndMouseEvent(hwnd);
+                bTackMouse = false;
+            }
+        } break;
+        case WM_MOUSELEAVE: {
+            if (hwnd == Window::GetWindowHandel(L"CopyPasteHEX"))
+                SendMessage(arr[0], STM_SETICON, (WPARAM)hIcon, NULL);
+            if (hwnd == Window::GetWindowHandel(L"CopyPasteRGB"))
+                SendMessage(arr[1], STM_SETICON, (WPARAM)hIcon, NULL);
+            if (hwnd == Window::GetWindowHandel(L"CopyPasteHSV"))
+                SendMessage(arr[2], STM_SETICON, (WPARAM)hIcon, NULL);
+            bTackMouse = true;
         } break;
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
@@ -366,7 +402,8 @@ LRESULT CALLBACK CopyPasteProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 Window::Window(const RECT& rc)
     : hInstance(GetModuleHandle(NULL)),
-      mRect(rc) {
+      mRect(rc),
+      m_cRef(0) {
     const wchar_t* CLASS_NAME = L"SmallWndClass";
     const wchar_t* wndName = L"Color Picker";
     WNDCLASS wc = {};
@@ -437,7 +474,7 @@ Window::Window(const RECT& rc)
     DeleteObject(elips);
 }
 
-Window::Window(HWND hwnd, const wchar_t* className, const wchar_t* wndTitle, const RECT& rc) : mRect(rc) {
+Window::Window(HWND hwnd, const wchar_t* className, const wchar_t* wndTitle, const RECT& rc) : mRect(rc), m_cRef(0) {
     WNDCLASS wc = {0};
     wc.lpszClassName = className;
     wc.hbrBackground = CreateSolidBrush(RGB(65, 65, 65));
@@ -469,7 +506,7 @@ Window::Window(HWND hwnd, const wchar_t* className, const wchar_t* wndTitle, con
     pc.hCursor = LoadCursor(NULL, IDC_ARROW);
     RegisterClass(&pc);
 
-    RECT cRect = {345, 195, 50, 50};
+    RECT cRect = {20, 55, 50, 50};
     m_hwNdChild = CreateWindowW(
         L"Color_window",
         NULL,
@@ -487,7 +524,7 @@ Window::Window(HWND hwnd, const wchar_t* className, const wchar_t* wndTitle, con
     HRGN rec = CreateRoundRectRgn(0, 0, cRect.right, cRect.bottom, 5, 5);
     SetWindowRgn(m_hwNdChild, rec, TRUE);
 
-    // UpdateWindow(m_hWnd);
+    UpdateWindow(m_hWnd);
 }
 
 bool Window::isInWndHandelMap(const wchar_t* wndName) {
@@ -554,7 +591,6 @@ HWND Window::CreateChildWindow(WNDPROC WndProc, HWND hwnd, const wchar_t* classN
                    L"Error", MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
-
     Window::m_uMap[windowTitle] = hWND;
     return hWND;
 }
@@ -566,7 +602,7 @@ HWND Window::CreateChildWindow(HWND hwnd, const wchar_t* className, const wchar_
     if (windowTitle == NULL || isInWndHandelMap(windowTitle)) {
         return 0;
     }
-    if (!wcslen(className)) {
+    if (className == nullptr) {
         GetClassNameW(hwnd, buffer, 25);
     } else {
         wcscpy(buffer, className);
@@ -655,27 +691,15 @@ HWND Window::GetHWNDCHild() {
     return m_hwNdChild;
 }
 
-int Window::CopyToClipboard() {
-    {
-        char data[256];
-        GetWindowTextA(this->GetParentHWND(), data, 8);
-        std::cout << "Title: " << data << std::endl;
-        OpenClipboard(GetDesktopWindow());
-        EmptyClipboard();
-        HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, ARRAYSIZE(data) + 1);
-        if (!hg) {
-            CloseClipboard();
-            return -1;
-        }
-        memcpy(GlobalLock(hg), data, ARRAYSIZE(data) + 1);
-        GlobalUnlock(hg);
-        SetClipboardData(CF_TEXT, hg);
-        CloseClipboard();
-        GlobalFree(hg);
-    }
-    return 0;
-}
-
 RECT Window::GetWinRect() {
     return mRect;
+}
+
+void Window::SetColorRef(COLORREF color) {
+    std::cout << " ";
+    m_cRef = color;
+}
+
+COLORREF Window::GetColorRef() const {
+    return m_cRef;
 }

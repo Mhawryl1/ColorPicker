@@ -3,6 +3,7 @@
 
 #define UNICODE
 #include <Windows.h>
+#include <commctrl.h>
 #include <shellapi.h>  //Shell_NotifyIcon() -> run api in system try area
 
 #include <iostream>
@@ -34,14 +35,17 @@ class Window {
     HWND GetParentHWND();
     HWND GetHWNDCHild();
     RECT GetWinRect();
-    int CopyToClipboard();
+    void SetColorRef(COLORREF);
+    COLORREF GetColorRef() const;
     static bool isInWndHandelMap(const wchar_t* wndName);
     static HWND GetWindowHandel(const wchar_t* wndName);
 
    public:
     static std::unordered_map<std::wstring, HWND> m_uMap;
+    static COLORREF m_sCref;
 
    private:
+    COLORREF m_cRef;
     HINSTANCE hInstance;
     HWND m_hWnd;
     HWND m_hwNdChild;

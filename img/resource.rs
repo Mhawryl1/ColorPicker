@@ -8,6 +8,7 @@ IDI_PICKER ICON "colour_picker.ico"
 IDI_CLOSE ICON "close.ico"
 IDI_CANCEL ICON "cancel.ico"
 IDI_PASTE ICON "paste.ico"
+IDI_PASTEWHITE ICON "pasteWhite.ico"
 IDI_CLOSEBMP BITMAP "closeBMP.bmp"
 IDR_POPUPMENU MENU 
     BEGIN 

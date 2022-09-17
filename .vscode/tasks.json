@@ -11,6 +11,7 @@
         "/std:c++20",
         "User32.lib",
         "Gdi32.lib",
+        "Comctl32.lib",
         "Shell32.lib",
         "${workspaceFolder}\\src\\*.cpp",
         "/I${workspaceFolder}\\include",

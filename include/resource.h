@@ -7,3 +7,4 @@
 #define IDM_CLOSE 106
 #define IDI_CLOSEBMP 107
 #define IDI_PASTE 108
+#define IDI_PASTEWHITE 109

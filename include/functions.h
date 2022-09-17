@@ -11,8 +11,14 @@ std::wstring ColorToRGB(COLORREF cRef);
 
 std::wstring ColorToHSV(COLORREF cRef);
 
+int CopyToClipboard(std::wstring str);
+
+int CopyToClipboard(HWND hwnd);
+
 HFONT MakeFont(int size = 20, LPCSTR family = "Arial", int width = 0, int weight = FW_DONTCARE);
 
 bool DrawIconFormResource(HWND hwnd, HBRUSH hBrush, int bkgColor, unsigned int ICON, int width, int height);
+
+bool TrackWndMouseEvent(HWND hWnd);
 
 #endif  // __FUNCTIONS_H

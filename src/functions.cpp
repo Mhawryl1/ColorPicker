@@ -112,3 +112,49 @@ bool DrawIconFormResource(HWND hwnd, HBRUSH hBrush, int bkgColor, unsigned int I
     ReleaseDC(hwnd, hdc);
     return true;
 }
+
+bool TrackWndMouseEvent(HWND hWnd) {
+    TRACKMOUSEEVENT me{};
+    me.cbSize = sizeof(TRACKMOUSEEVENT);
+    me.dwHoverTime = 1;
+    me.hwndTrack = hWnd;
+    me.dwFlags = TME_HOVER | TME_LEAVE;
+    return TrackMouseEvent(&me);
+}
+
+int CopyToClipboard(std::wstring wstr) {
+    std::string str = {wstr.begin(), wstr.end()};
+    OpenClipboard(GetDesktopWindow());
+    EmptyClipboard();
+    HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, str.size() + 1);
+    if (!hg) {
+        CloseClipboard();
+        return -1;
+    }
+    memcpy(GlobalLock(hg), str.c_str(), str.size() + 1);
+    GlobalUnlock(hg);
+    SetClipboardData(CF_TEXT, hg);
+    CloseClipboard();
+    GlobalFree(hg);
+    return 0;
+}
+
+int CopyToClipboard(HWND hwnd) {
+    {
+        char data[256] = {0};
+        GetWindowTextA(hwnd, data, 8);
+        OpenClipboard(GetDesktopWindow());
+        EmptyClipboard();
+        HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, ARRAYSIZE(data) + 1);
+        if (!hg) {
+            CloseClipboard();
+            return -1;
+        }
+        memcpy(GlobalLock(hg), data, ARRAYSIZE(data) + 1);
+        GlobalUnlock(hg);
+        SetClipboardData(CF_TEXT, hg);
+        CloseClipboard();
+        GlobalFree(hg);
+    }
+    return 0;
+}
