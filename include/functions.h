@@ -3,6 +3,8 @@
 
 #include <windows.h>
 
+#include <codecvt>
+#include <locale>  // for wstring_convert
 #include <sstream>
 
 std::wstring ColorRefToHex(COLORREF cRef);

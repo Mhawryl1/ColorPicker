@@ -27,7 +27,8 @@ class Window {
     Window(Window&) = delete;
     Window operator=(Window&) = delete;
     bool ProcessMessage();
-    void ChangeWinPos(POINT pt, RECT rc);
+    void ChangeWinPos(POINT pt, RECT rct);
+    HWND CreateNewWindow(const wchar_t* className, const wchar_t* wndTitle, const RECT&);
     HWND CreateChildWindow(WNDPROC WndProc, HWND hwnd, const wchar_t* className, const wchar_t* windowTitle, const RECT& rct, LPWSTR IDI_ICON, LPWSTR IDC_CURSOR, COLORREF color, HMENU hMenu, DWORD STYLE);
     HWND CreateChildWindow(HWND hwnd, const wchar_t* className, const wchar_t* windowTitle, const RECT& pos, HMENU hMenu, DWORD style);
     bool CreateRoundedWindow(HWND hwnd, short w, short h);
@@ -35,8 +36,6 @@ class Window {
     HWND GetParentHWND();
     HWND GetHWNDCHild();
     RECT GetWinRect();
-    void SetColorRef(COLORREF);
-    COLORREF GetColorRef() const;
     static bool isInWndHandelMap(const wchar_t* wndName);
     static HWND GetWindowHandel(const wchar_t* wndName);
 

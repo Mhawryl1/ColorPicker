@@ -19,17 +19,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
         } break;
         case WM_USER_SHELLICON: {
             switch (lParam) {
-                case WM_LBUTTONDOWN:
-                    ShowWindow(Window::GetWindowHandel(L"Color Picker"), SW_SHOW);
-
-                    break;
+                case WM_LBUTTONDOWN: {
+                    if (IsIconic(Window::GetWindowHandel(L"Color Picker")))
+                        ShowWindow(Window::GetWindowHandel(L"Color Picker"), SW_MAXIMIZE);
+                    else
+                        ShowWindow(Window::GetWindowHandel(L"Color Picker"), SW_SHOW);
+                } break;
                 case WM_RBUTTONDOWN: {
+                    /////////////////Sub Menu////////////////
                     POINT pt;
-                    HBITMAP icon = LoadBitmap(GetModuleHandle(NULL), (LPCWSTR)IDI_CLOSEBMP);
                     GetCursorPos(&pt);
+                    // HBITMAP icon = LoadBitmap(GetModuleHandle(NULL), (LPCWSTR)IDI_CLOSEBMP);
                     HMENU hMenu = LoadMenu(NULL, MAKEINTRESOURCE(IDR_POPUPMENU));
                     hMenu = GetSubMenu(hMenu, 0);
-                    AppendMenu(hMenu, MF_BITMAP, IDM_CLOSE, LPCWSTR(IDI_PICKER));
+                    // AppendMenu(hMenu, MF_BITMAP, IDM_CLOSE, LPCWSTR(IDI_PICKER));
                     TrackPopupMenu(hMenu, TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_HORNEGANIMATION, pt.x, pt.y, 0, hwnd, NULL);
                 } break;
 
@@ -178,7 +181,7 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
         } break;
         case WM_DRAWITEM: {
-            /////////////////Draw custom button with icon///////////////
+            ///////////////Draw custom button with icon///////////////
             auto ds = (LPDRAWITEMSTRUCT)lParam;
             if (ds->hwndItem == hButton) {
                 // Load icon from resource file
@@ -230,9 +233,8 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         case WM_COMMAND: {
             switch (wParam) {
                 case ID_ICONBUTTONCLIK: {
-                    HWND hParent = GetParent(hwnd);
-                    ShowWindow(hwnd, SW_HIDE);
-                    ShowWindow(hParent, SW_SHOW);
+                    ShowWindow(Window::GetWindowHandel(L"BigColorPanel"), SW_HIDE);
+                    ShowWindow(Window::GetWindowHandel(L"Color Picker"), SW_SHOW);
 
                 } break;
                 case WM_SENDCOLOR: {
@@ -265,32 +267,8 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 LRESULT CALLBACK BarMenuProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     static bool TrackingMouse = TRUE;
     static HBRUSH hBrush = NULL;
+    HICON hIcon = NULL;
     switch (uMsg) {
-        case WM_MOUSEMOVE:
-            if (TrackingMouse && hwnd == Window::GetWindowHandel(L"MiniButtons")) {
-                TrackWndMouseEvent(hwnd);
-                TrackingMouse = FALSE;
-            }
-            if (TrackingMouse && hwnd == Window::GetWindowHandel(L"CloseButton")) {
-                TrackWndMouseEvent(hwnd);
-                TrackingMouse = FALSE;
-            }
-            break;
-        case WM_MOUSEHOVER: {
-            if (hBrush)
-                DeleteObject(hBrush);
-            hBrush = CreateSolidBrush(RGB(100, 0, 0));
-            SetClassLongPtr(hwnd, -10, (LONG_PTR)hBrush);
-            InvalidateRect(hwnd, NULL, TRUE);
-        } break;
-        case WM_MOUSELEAVE: {
-            if (hBrush)
-                DeleteObject(hBrush);
-            hBrush = CreateSolidBrush(RGB(55, 55, 55));
-            SetClassLongPtr(hwnd, -10, (LONG_PTR)hBrush);  // change bkg color
-            InvalidateRect(hwnd, NULL, TRUE);              // force repaint bkg
-            TrackingMouse = TRUE;
-        } break;
         case WM_PAINT: {
             if (hwnd == Window::GetWindowHandel(L"MiniButtons")) {
                 PAINTSTRUCT ps;
@@ -301,7 +279,7 @@ LRESULT CALLBACK BarMenuProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 DrawEdge(ps.hdc, &rct, EDGE_BUMP, BF_BOTTOM);
                 EndPaint(hwnd, &ps);
             }
-            if (hwnd = Window::GetWindowHandel(L"CloseButton")) {
+            if (hwnd == Window::GetWindowHandel(L"CloseButton")) {
                 PAINTSTRUCT ps;
                 BeginPaint(hwnd, &ps);
                 RECT rct;
@@ -311,12 +289,41 @@ LRESULT CALLBACK BarMenuProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 DrawEdge(ps.hdc, &rct, EDGE_BUMP, BF_DIAGONAL);
                 EndPaint(hwnd, &ps);
             }
+
+        } break;
+        case WM_MOUSEMOVE:
+            if (TrackingMouse && hwnd == Window::GetWindowHandel(L"MiniButtons")) {
+                TrackWndMouseEvent(hwnd);
+                TrackingMouse = FALSE;
+            }
+            if (TrackingMouse && hwnd == Window::GetWindowHandel(L"CloseButton")) {
+                TrackWndMouseEvent(hwnd);
+                TrackingMouse = FALSE;
+            }
+
+            break;
+        case WM_MOUSEHOVER: {
+            if (hBrush)
+                DeleteObject(hBrush);
+            hBrush = CreateSolidBrush(RGB(100, 0, 0));
+            SetClassLongPtr(hwnd, -10, (LONG_PTR)hBrush);  // change bkg color
+            InvalidateRect(hwnd, NULL, TRUE);              // force repaint bkg
+        } break;
+        case WM_MOUSELEAVE: {
+            if (hBrush)
+                DeleteObject(hBrush);
+            hBrush = CreateSolidBrush(RGB(55, 55, 55));
+            SetClassLongPtr(hwnd, -10, (LONG_PTR)hBrush);  // change bkg color
+            InvalidateRect(hwnd, NULL, TRUE);              // force repaint bkg
+            TrackingMouse = TRUE;
         } break;
         case WM_LBUTTONDOWN: {
             if (hwnd == Window::GetWindowHandel(L"CloseButton")) {
-                ShowWindow(Window::GetWindowHandel(L"Color Panel"), SW_HIDE);
+                ShowWindow(Window::GetWindowHandel(L"BigColorPanel"), SW_HIDE);
             }
             if (hwnd == Window::GetWindowHandel(L"MiniButtons")) {
+                ShowWindow(Window::GetWindowHandel(L"BigColorPanel"), SW_HIDE);
+                ShowWindow(Window::GetWindowHandel(L"Color Picker"), SW_MINIMIZE);
             }
         } break;
         default:
@@ -324,6 +331,7 @@ LRESULT CALLBACK BarMenuProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
+
 LRESULT CALLBACK CopyPasteProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     static HBRUSH hBrush = NULL;
     static HWND arr[3] = {NULL};
@@ -527,6 +535,62 @@ Window::Window(HWND hwnd, const wchar_t* className, const wchar_t* wndTitle, con
     UpdateWindow(m_hWnd);
 }
 
+HWND Window::CreateNewWindow(const wchar_t* className, const wchar_t* wndTitle, const RECT& Rect) {
+    WNDCLASS wc = {0};
+    wc.lpszClassName = className;
+    wc.hbrBackground = CreateSolidBrush(RGB(65, 65, 65));
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wc.lpfnWndProc = ColorPanelProc;
+    RegisterClass(&wc);
+    HWND hWnd = CreateWindowEx(
+        NULL,
+        className,
+        wndTitle,
+        WS_POPUP | WS_CHILD,
+        Rect.left, Rect.top, Rect.right, Rect.bottom,
+        NULL,
+        NULL,
+        NULL,
+        NULL);
+
+    if (!Window::isInWndHandelMap(wndTitle))
+        Window::m_uMap[wndTitle] = hWnd;
+
+    HRGN rRect = CreateRoundRectRgn(0, 0, Rect.right, Rect.bottom, 10, 10);
+    SetWindowRgn(hWnd, rRect, TRUE);
+
+    /////////////////////////////////////////////////////////////
+    WNDCLASS pc = {0};
+    pc.lpszClassName = L"Color_window";
+    pc.hbrBackground = CreateSolidBrush(RGB(100, 45, 45));
+    pc.lpfnWndProc = BigPanelColorProc;
+    pc.hCursor = LoadCursor(NULL, IDC_ARROW);
+    RegisterClass(&pc);
+
+    RECT cRect = {20, 55, 50, 50};
+    HWND hwNdChild = CreateWindowW(
+        L"Color_window",
+        NULL,
+        WS_CHILD | WS_VISIBLE,
+        cRect.left, cRect.top, cRect.right, cRect.bottom, hWnd,
+        NULL,
+        NULL,
+        NULL);
+
+    if (!hwNdChild) {
+        MessageBoxW(NULL, L"Create widnow failed!", L"Error!", MB_OK | MB_ICONERROR);
+        return 0;
+    }
+
+    if (!Window::isInWndHandelMap(L"PickedColorBigPanel"))
+        Window::m_uMap[L"PickedColorBigPanel"] = hwNdChild;
+
+    HRGN rec = CreateRoundRectRgn(0, 0, cRect.right, cRect.bottom, 5, 5);
+    SetWindowRgn(hwNdChild, rec, TRUE);
+
+    UpdateWindow(hWnd);
+}
+
 bool Window::isInWndHandelMap(const wchar_t* wndName) {
     if (m_uMap.contains(wndName)) {
         MessageBoxW(NULL, L"Window name must be unique", L"Warning.", MB_ICONWARNING | MB_OK);
@@ -592,6 +656,7 @@ HWND Window::CreateChildWindow(WNDPROC WndProc, HWND hwnd, const wchar_t* classN
         return 0;
     }
     Window::m_uMap[windowTitle] = hWND;
+    // UpdateWindow(hWND);
     return hWND;
 }
 
@@ -625,6 +690,7 @@ HWND Window::CreateChildWindow(HWND hwnd, const wchar_t* className, const wchar_
         return 0;
     }
     Window::m_uMap[windowTitle] = hWND;
+    UpdateWindow(hWND);
     return hWND;
 }
 
@@ -693,13 +759,4 @@ HWND Window::GetHWNDCHild() {
 
 RECT Window::GetWinRect() {
     return mRect;
-}
-
-void Window::SetColorRef(COLORREF color) {
-    std::cout << " ";
-    m_cRef = color;
-}
-
-COLORREF Window::GetColorRef() const {
-    return m_cRef;
 }
