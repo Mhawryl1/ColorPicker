@@ -158,3 +158,9 @@ int CopyToClipboard(HWND hwnd) {
     }
     return 0;
 }
+
+void ChangeBackgroundColor(HWND hwnd, HBRUSH hBrush, COLORREF rColor) {
+    hBrush = CreateSolidBrush(rColor);
+    SetClassLongPtr(hwnd, -10, (LONG_PTR)hBrush);  // change bkg color
+    InvalidateRect(hwnd, NULL, TRUE);              // force repaint bkg
+}

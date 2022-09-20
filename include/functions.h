@@ -23,4 +23,6 @@ bool DrawIconFormResource(HWND hwnd, HBRUSH hBrush, int bkgColor, unsigned int I
 
 bool TrackWndMouseEvent(HWND hWnd);
 
+void ChangeBackgroundColor(HWND hwnd, HBRUSH brush, COLORREF rColor);
+
 #endif  // __FUNCTIONS_H

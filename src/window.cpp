@@ -29,10 +29,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     /////////////////Sub Menu////////////////
                     POINT pt;
                     GetCursorPos(&pt);
-                    // HBITMAP icon = LoadBitmap(GetModuleHandle(NULL), (LPCWSTR)IDI_CLOSEBMP);
+
+                    // HBITMAP icon = LoadBitmap(GetModuleHandle(0), MAKEINTRESOURCE(IDI_CLOSEBMP));
+                    HBITMAP hIClose = (HBITMAP)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_CLOSEBMPR), IMAGE_BITMAP, 20, 20, LR_COPYFROMRESOURCE);
+                    HBITMAP hISetting = (HBITMAP)LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SETTING), IMAGE_BITMAP, 20, 20, LR_COPYFROMRESOURCE);
+
+                    if (!hIClose) {
+                        std::cout << "Could load submenu icon\n";
+                    }
                     HMENU hMenu = LoadMenu(NULL, MAKEINTRESOURCE(IDR_POPUPMENU));
                     hMenu = GetSubMenu(hMenu, 0);
-                    // AppendMenu(hMenu, MF_BITMAP, IDM_CLOSE, LPCWSTR(IDI_PICKER));
+                    SetMenuItemBitmaps(hMenu, IDM_SETTING, MF_BITMAP, hISetting, hISetting);
+                    SetMenuItemBitmaps(hMenu, IDM_CLOSE, MF_BITMAP, hIClose, hIClose);
                     TrackPopupMenu(hMenu, TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_HORNEGANIMATION, pt.x, pt.y, 0, hwnd, NULL);
                 } break;
 
@@ -65,11 +73,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     SendMessage(hWNDTx, WM_SETFONT, WPARAM(hFont), TRUE);
                     ReleaseDC(hwnd, hdc);
                 } break;
-                case IDM_TEST:  // SUB menu Message handel
+                case IDM_SETTING:  // SUB menu Message handel
                     std::cout << "Test\n";
                     break;
                 case IDM_CLOSE:
                     SendMessage(hwnd, WM_CLOSE, NULL, NULL);
+                    break;
+                case IDM_BUTTTON1:
+                    std::cout << "Button\1";
                     break;
                 default:
                     break;
@@ -131,6 +142,7 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     static HWND hWndLine = NULL;
     static HWND hButton = NULL;
     static HBRUSH hBrush = NULL;
+    static HBRUSH hBrushButton = NULL;
     static POINT lastLocation;
 
     switch (uMsg) {
@@ -190,15 +202,19 @@ LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                     std::cerr << "Couldn't load image\n";
                     return -1;
                 }
-                FillRect(ds->hDC, &ds->rcItem, hBrush);
+                hBrushButton = CreateSolidBrush(RGB(55, 55, 55));
+                FillRect(ds->hDC, &ds->rcItem, hBrushButton);
+                HRGN hrgn = CreateRoundRectRgn(0, 0, 30, 30, 5, 5);
+                SetWindowRgn(hButton, hrgn, TRUE);
                 DrawIconEx(
                     ds->hDC,
-                    ds->rcItem.left,
-                    ds->rcItem.top,
+                    ds->rcItem.left + 2,
+                    ds->rcItem.top + 2,
                     hIcon,
-                    30,
-                    30,
+                    25,
+                    25,
                     0, NULL, DI_NORMAL);
+                DeleteObject(hBrushButton);
             }
         } break;
         case WM_PAINT: {
@@ -305,16 +321,12 @@ LRESULT CALLBACK BarMenuProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_MOUSEHOVER: {
             if (hBrush)
                 DeleteObject(hBrush);
-            hBrush = CreateSolidBrush(RGB(100, 0, 0));
-            SetClassLongPtr(hwnd, -10, (LONG_PTR)hBrush);  // change bkg color
-            InvalidateRect(hwnd, NULL, TRUE);              // force repaint bkg
+            ChangeBackgroundColor(hwnd, hBrush, RGB(100, 0, 0));
         } break;
         case WM_MOUSELEAVE: {
             if (hBrush)
                 DeleteObject(hBrush);
-            hBrush = CreateSolidBrush(RGB(55, 55, 55));
-            SetClassLongPtr(hwnd, -10, (LONG_PTR)hBrush);  // change bkg color
-            InvalidateRect(hwnd, NULL, TRUE);              // force repaint bkg
+            ChangeBackgroundColor(hwnd, hBrush, RGB(55, 55, 55));
             TrackingMouse = TRUE;
         } break;
         case WM_LBUTTONDOWN: {
@@ -361,6 +373,7 @@ LRESULT CALLBACK CopyPasteProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
             }
 
         } break;
+
         case WM_CTLCOLORSTATIC: {
             HDC hdcStatic = (HDC)wParam;
             hBrush = CreateSolidBrush(RGB(55, 55, 55));
@@ -543,7 +556,7 @@ HWND Window::CreateNewWindow(const wchar_t* className, const wchar_t* wndTitle, 
     wc.lpfnWndProc = ColorPanelProc;
     RegisterClass(&wc);
     HWND hWnd = CreateWindowEx(
-        NULL,
+        WS_EX_TOPMOST,
         className,
         wndTitle,
         WS_POPUP | WS_CHILD,
@@ -587,7 +600,6 @@ HWND Window::CreateNewWindow(const wchar_t* className, const wchar_t* wndTitle, 
 
     HRGN rec = CreateRoundRectRgn(0, 0, cRect.right, cRect.bottom, 5, 5);
     SetWindowRgn(hwNdChild, rec, TRUE);
-
     UpdateWindow(hWnd);
 }
 
@@ -732,15 +744,16 @@ bool Window::ProcessMessage() {
         if (msg.message == WM_QUIT) {
             return false;
         }
+
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
     return true;
 }
 
-void Window::ChangeWinPos(POINT pnt, RECT rc) {
+void Window::ChangeWinPos(HWND hwnd, POINT pnt, RECT rc) {
     SetWindowPos(
-        m_hWnd,
+        hwnd,
         HWND_TOPMOST,
         pnt.x + 20,
         pnt.y + 20,
