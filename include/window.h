@@ -16,13 +16,13 @@
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ColorPanelProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK BigPanelColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK BarMenuProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK CopyPasteProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 class Window {
    public:
     Window(const RECT&);
-    Window(HWND hwnd, const wchar_t* className, const wchar_t* wndTitle, const RECT&);
     ~Window();
     Window(Window&) = delete;
     Window operator=(Window&) = delete;
