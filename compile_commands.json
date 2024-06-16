@@ -1,26 +1,20 @@
 [
 {
   "directory": "C:/Users/DaroL/Desktop/Projects/C++/colorPicker/build",
-  "command": "D:\\DevSoft\\msys64\\ucrt64\\bin\\c++.exe  @CMakeFiles/functions.dir/includes_CXX.rsp  -o CMakeFiles\\functions.dir\\src\\functions.cpp.obj -c C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\functions.cpp",
-  "file": "C:/Users/DaroL/Desktop/Projects/C++/colorPicker/src/functions.cpp",
-  "output": "CMakeFiles/functions.dir/src/functions.cpp.obj"
+  "command": "C:\\PROGRA~1\\MICROS~3\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++20 @CMakeFiles\\PickColor.dir\\src\\functions.cpp.obj.modmap /FoCMakeFiles\\PickColor.dir\\src\\functions.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\functions.cpp",
+  "file": "C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\functions.cpp",
+  "output": "CMakeFiles\\PickColor.dir\\src\\functions.cpp.obj"
 },
 {
   "directory": "C:/Users/DaroL/Desktop/Projects/C++/colorPicker/build",
-  "command": "D:\\DevSoft\\msys64\\ucrt64\\bin\\c++.exe  @CMakeFiles/PickColor.dir/includes_CXX.rsp -std=gnu++20 -o CMakeFiles\\PickColor.dir\\src\\functions.cpp.obj -c C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\functions.cpp",
-  "file": "C:/Users/DaroL/Desktop/Projects/C++/colorPicker/src/functions.cpp",
-  "output": "CMakeFiles/PickColor.dir/src/functions.cpp.obj"
+  "command": "C:\\PROGRA~1\\MICROS~3\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++20 @CMakeFiles\\PickColor.dir\\src\\main.cpp.obj.modmap /FoCMakeFiles\\PickColor.dir\\src\\main.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\main.cpp",
+  "file": "C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\main.cpp",
+  "output": "CMakeFiles\\PickColor.dir\\src\\main.cpp.obj"
 },
 {
   "directory": "C:/Users/DaroL/Desktop/Projects/C++/colorPicker/build",
-  "command": "D:\\DevSoft\\msys64\\ucrt64\\bin\\c++.exe  @CMakeFiles/PickColor.dir/includes_CXX.rsp -std=gnu++20 -o CMakeFiles\\PickColor.dir\\src\\main.cpp.obj -c C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\main.cpp",
-  "file": "C:/Users/DaroL/Desktop/Projects/C++/colorPicker/src/main.cpp",
-  "output": "CMakeFiles/PickColor.dir/src/main.cpp.obj"
-},
-{
-  "directory": "C:/Users/DaroL/Desktop/Projects/C++/colorPicker/build",
-  "command": "D:\\DevSoft\\msys64\\ucrt64\\bin\\c++.exe  @CMakeFiles/PickColor.dir/includes_CXX.rsp -std=gnu++20 -o CMakeFiles\\PickColor.dir\\src\\window.cpp.obj -c C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\window.cpp",
-  "file": "C:/Users/DaroL/Desktop/Projects/C++/colorPicker/src/window.cpp",
-  "output": "CMakeFiles/PickColor.dir/src/window.cpp.obj"
+  "command": "C:\\PROGRA~1\\MICROS~3\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1439~1.335\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IC:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 -std:c++20 @CMakeFiles\\PickColor.dir\\src\\window.cpp.obj.modmap /FoCMakeFiles\\PickColor.dir\\src\\window.cpp.obj /FdTARGET_COMPILE_PDB /FS -c C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\window.cpp",
+  "file": "C:\\Users\\DaroL\\Desktop\\Projects\\C++\\colorPicker\\src\\window.cpp",
+  "output": "CMakeFiles\\PickColor.dir\\src\\window.cpp.obj"
 }
 ]
